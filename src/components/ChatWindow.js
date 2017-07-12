@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { Container, Form, Button } from "semantic-ui-react";
 
-import Message from "./Message";
+import ChatMessage from "./ChatMessage";
+import ChatInput from "./ChatInput";
 
 import io from "socket.io-client";
 
@@ -12,23 +12,26 @@ class ChatWindow extends Component {
     super(props);
     this.state = {
       message: "",
-      allMessages: []
+      messages: [],
+      nickNameChanged: false
     };
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleMessage = this.handleMessage.bind(this);
   }
+
   componentDidMount() {
     this.socket = io(SERVER_URL);
     this.socket.on("chat message", this.handleMessage);
+    this.socket.on("server message", this.handleMessage);
   }
 
   handleMessage(message) {
-    const { allMessages } = this.state;
-    allMessages.push(message);
+    let { messages } = this.state;
+    messages.push(message);
     this.setState({
-      allMessages
+      messages
     });
   }
 
@@ -39,9 +42,16 @@ class ChatWindow extends Component {
   }
 
   handleSubmit(event) {
-    const { message } = this.state;
+    const { message, nickNameChanged } = this.state;
     if (this.socket) {
-      this.socket.emit("chat message", message);
+      if (nickNameChanged) {
+        this.socket.emit("chat message", message);
+      } else {
+        this.socket.emit("change nickname", message);
+        this.setState({
+          nickNameChanged: true
+        });
+      }
       this.setState({
         message: ""
       });
@@ -49,28 +59,24 @@ class ChatWindow extends Component {
   }
 
   render() {
-    const { message } = this.state;
+    const { messages, message, nickNameChanged } = this.state;
     return (
-      <Container fluid>
-        {this.state.allMessages.map(message =>
-          <Message key={Math.random() * 1000} message={message} />
-        )}
-        <Form reply onSubmit={this.handleSubmit}>
-          <Form.TextArea
-            name="message"
-            placeholder="Enter Message"
-            value={message}
-            onChange={this.handleChange}
-          />
-          <Button
-            content="Send"
-            labelPosition="left"
-            icon="send"
-            primary
-            disabled={!this.state.message}
-          />
-        </Form>
-      </Container>
+      <div className="container">
+        <div className="message-list">
+          {messages.map(message =>
+            <ChatMessage message={message} key={message.date} />
+          )}
+        </div>
+
+        <ChatInput
+          message={message}
+          handleChange={this.handleChange}
+          handleSubmit={this.handleSubmit}
+          placeholder={
+            !nickNameChanged ? "Enter your nick name" : "Start typing"
+          }
+        />
+      </div>
     );
   }
 }

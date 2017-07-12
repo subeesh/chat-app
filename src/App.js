@@ -1,6 +1,5 @@
 import React from "react";
 import { BrowserRouter as Router, Route } from "react-router-dom";
-import { Segment } from "semantic-ui-react";
 
 import "./App.css";
 
@@ -10,12 +9,12 @@ import ChatWindow from "./components/ChatWindow";
 
 const BasicExample = () =>
   <Router>
-    <div>
+    <div className="app">
       <Header />
-      <Segment padded className="main">
+      <div className="main">
         <Route exact path="/" component={Dashboard} />
         <Route path="/chat" component={ChatWindow} />
-      </Segment>
+      </div>
     </div>
   </Router>;
 export default BasicExample;
