@@ -1,9 +1,8 @@
 import React, { Component } from "react";
+import io from "socket.io-client";
 
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
-
-import io from "socket.io-client";
 
 const SERVER_URL = "http://localhost:9000";
 
@@ -25,6 +24,11 @@ class ChatWindow extends Component {
     this.socket = io(SERVER_URL);
     this.socket.on("chat message", this.handleMessage);
     this.socket.on("server message", this.handleMessage);
+  }
+
+  componentWillUnmount() {
+    this.socket.off("chat message", this.handleMessage);
+    this.socket.off("server message", this.handleMessage);
   }
 
   handleMessage(message) {
